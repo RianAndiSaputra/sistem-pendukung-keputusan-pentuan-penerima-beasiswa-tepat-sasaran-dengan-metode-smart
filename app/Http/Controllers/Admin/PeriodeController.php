@@ -25,6 +25,7 @@ class PeriodeController extends Controller
             'nama_periode' => 'required|unique:periode_seleksis',
             'tanggal_mulai' => 'required|date',
             'tanggal_berakhir' => 'required|date|after:tanggal_mulai',
+            'kuota_penerima' => 'required|integer|min:1'
         ]);
 
         // Nonaktifkan periode lain jika yang baru aktif
@@ -48,6 +49,7 @@ class PeriodeController extends Controller
             'nama_periode' => 'required|unique:periode_seleksis,nama_periode,' . $periode->id,
             'tanggal_mulai' => 'required|date',
             'tanggal_berakhir' => 'required|date|after:tanggal_mulai',
+            'kuota_penerima' => 'required|integer|min:1'
         ]);
 
         // Nonaktifkan periode lain jika yang ini diaktifkan

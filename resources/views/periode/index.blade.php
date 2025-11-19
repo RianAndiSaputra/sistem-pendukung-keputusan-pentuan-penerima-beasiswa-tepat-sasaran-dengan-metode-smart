@@ -22,6 +22,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Periode</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kuota</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Pendaftar</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -37,6 +38,11 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ \Carbon\Carbon::parse($periode->tanggal_mulai)->format('d M Y') }} - 
                             {{ \Carbon\Carbon::parse($periode->tanggal_berakhir)->format('d M Y') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <span class="px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">
+                                {{ $periode->kuota_penerima }} Penerima
+                            </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($periode->is_active)
@@ -116,6 +122,19 @@
                     @enderror
                 </div>
 
+                <!-- Kuota Penerima -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Kuota Penerima Beasiswa *</label>
+                    <input type="number" name="kuota_penerima" 
+                           value="{{ old('kuota_penerima', 10) }}"
+                           min="1" max="100" required
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="Jumlah mahasiswa yang akan diterima">
+                    @error('kuota_penerima')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Status Aktif -->
                 <div class="flex items-center">
                     <input type="checkbox" name="is_active" id="is_active" value="1"
@@ -182,6 +201,14 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Berakhir *</label>
                     <input type="date" name="tanggal_berakhir" id="edit_tanggal_berakhir" required
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Kuota Penerima -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Kuota Penerima Beasiswa *</label>
+                    <input type="number" name="kuota_penerima" id="edit_kuota_penerima"
+                           min="1" max="100" required
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
@@ -275,6 +302,7 @@ function openEditModal(periode) {
     document.getElementById('edit_nama_periode').value = periode.nama_periode;
     document.getElementById('edit_tanggal_mulai').value = periode.tanggal_mulai;
     document.getElementById('edit_tanggal_berakhir').value = periode.tanggal_berakhir;
+    document.getElementById('edit_kuota_penerima').value = periode.kuota_penerima;
     document.getElementById('edit_is_active').checked = periode.is_active;
     
     // Update form action
@@ -284,7 +312,7 @@ function openEditModal(periode) {
     openModal('editPeriodeModal');
 }
 
-// Delete modal function - PERBAIKAN DI SINI
+// Delete modal function
 function openDeleteModal(id, name, mahasiswaCount) {
     document.getElementById('deleteItemName').textContent = name;
     const form = document.getElementById('deleteForm');

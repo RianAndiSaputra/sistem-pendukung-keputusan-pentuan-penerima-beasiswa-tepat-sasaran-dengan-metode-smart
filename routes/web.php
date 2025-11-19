@@ -12,7 +12,7 @@ use App\Http\Controllers\Admin\LaporanController;
 use Illuminate\Support\Facades\Route;
 
 // Authentication Routes
-Route::get('/', [AuthController::class, 'showLoginForm'])->name('admin.login.form');
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('admin.login.form');
 Route::post('/login', [AuthController::class, 'login'])->name('admin.login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
 
@@ -50,6 +50,6 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('laporan/preview', [LaporanController::class, 'preview'])->name('laporan.preview');
 });
 
-// Route::get('/', function () {
-//     return redirect('/dashboard');
-// });
+Route::get('/', function () {
+    return redirect('/dashboard');
+});

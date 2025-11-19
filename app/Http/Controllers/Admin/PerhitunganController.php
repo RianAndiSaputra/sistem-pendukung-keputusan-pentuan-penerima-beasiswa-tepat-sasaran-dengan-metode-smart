@@ -6,26 +6,67 @@ use App\Http\Controllers\Controller;
 use App\Models\Mahasiswa;
 use App\Models\Kriteria;
 use App\Models\HasilSeleksi;
+use App\Models\PeriodeSeleksi;
 use Illuminate\Http\Request;
 
 class PerhitunganController extends Controller
 {
     public function index()
     {
-        $mahasiswas = Mahasiswa::with('hasilSeleksi')->get();
+        // Ambil periode aktif
+        $periodeAktif = PeriodeSeleksi::where('is_active', true)->first();
+        
+        // Ambil SEMUA mahasiswa dari periode aktif (baik yang sudah dihitung maupun belum)
+        $mahasiswas = Mahasiswa::with(['hasilSeleksi', 'periode'])
+            ->when($periodeAktif, function($query) use ($periodeAktif) {
+                $query->where('periode_id', $periodeAktif->id);
+            })
+            ->latest()
+            ->get();
+            
         $kriterias = Kriteria::all();
         $hasData = HasilSeleksi::count() > 0;
+        $totalMahasiswa = $mahasiswas->count();
+        
+        // Hitung yang sudah dan belum dihitung
+        $totalSudahDihitung = $mahasiswas->filter(function($mahasiswa) {
+            return !is_null($mahasiswa->hasilSeleksi);
+        })->count();
+        
+        $totalBelumDihitung = $totalMahasiswa - $totalSudahDihitung;
 
-        return view('perhitungan.index', compact('mahasiswas', 'kriterias', 'hasData'));
+        return view('perhitungan.index', compact(
+            'mahasiswas', 
+            'kriterias', 
+            'hasData',
+            'totalMahasiswa',
+            'totalSudahDihitung',
+            'totalBelumDihitung',
+            'periodeAktif'
+        ));
     }
 
     public function proses(Request $request)
     {
-        // Hapus hasil sebelumnya
-        HasilSeleksi::truncate();
+        $request->validate([
+            'periode_id' => 'required|exists:periode_seleksis,id'
+        ]);
 
-        $mahasiswas = Mahasiswa::all();
+        $periodeId = $request->periode_id;
+        $periode = PeriodeSeleksi::find($periodeId);
+        
+        // Hapus hasil sebelumnya untuk periode ini
+        HasilSeleksi::whereHas('mahasiswa', function($q) use ($periodeId) {
+            $q->where('periode_id', $periodeId);
+        })->delete();
+
+        // Ambil SEMUA mahasiswa dari periode yang dipilih
+        $mahasiswas = Mahasiswa::where('periode_id', $periodeId)->get();
         $kriterias = Kriteria::all()->keyBy('nama');
+
+        if ($mahasiswas->isEmpty()) {
+            return redirect()->route('perhitungan.index')->with('error', 'Tidak ada data mahasiswa untuk periode yang dipilih.');
+        }
 
         $results = [];
 
@@ -61,16 +102,24 @@ class PerhitunganController extends Controller
             return $b['total_skor'] <=> $a['total_skor'];
         });
 
-        // Tambahkan ranking dan status
+        // Tentukan status berdasarkan kuota periode
+        $kuota = $periode->kuota_penerima;
         foreach ($results as $index => &$result) {
             $result['ranking'] = $index + 1;
-            $result['status'] = ($index + 1) <= 10; // Asumsi 10 penerima beasiswa
+            $result['status'] = ($index + 1) <= $kuota; // Hanya yang rankingnya <= kuota yang lolos
         }
 
         // Simpan ke database
         HasilSeleksi::insert($results);
 
-        return redirect()->route('perhitungan.index')->with('success', 'Perhitungan SMART berhasil diproses.');
+        $totalLolos = collect($results)->where('status', true)->count();
+
+        return redirect()->route('perhitungan.index')->with('success', 
+            'Perhitungan SMART berhasil diproses! ' . 
+            count($results) . ' mahasiswa telah dihitung. ' .
+            $totalLolos . ' mahasiswa lolos (Kuota: ' . $kuota . '). ' .
+            'Periode: ' . $periode->nama_periode
+        );
     }
 
     private function hitungSkorIpk($ipk)

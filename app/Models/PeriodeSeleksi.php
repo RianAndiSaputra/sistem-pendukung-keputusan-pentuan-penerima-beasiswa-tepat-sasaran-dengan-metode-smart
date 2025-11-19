@@ -13,7 +13,8 @@ class PeriodeSeleksi extends Model
         'nama_periode',
         'tanggal_mulai',
         'tanggal_berakhir',
-        'is_active'
+        'is_active',
+        'kuota_penerima'
     ];
 
     public function mahasiswas()

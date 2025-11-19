@@ -25,9 +25,73 @@
         .shadow-soft {
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
+        
+        /* Alert Styles */
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+        }
+        .alert {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateX(400px);
+            opacity: 0;
+            transition: all 0.4s ease;
+            max-width: 100%;
+        }
+        .alert.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .alert.success {
+            background-color: #f0fdf4;
+            border-left: 4px solid #10b981;
+            color: #065f46;
+        }
+        .alert.error {
+            background-color: #fef2f2;
+            border-left: 4px solid #ef4444;
+            color: #7f1d1d;
+        }
+        .alert i {
+            font-size: 20px;
+            margin-right: 12px;
+        }
+        .alert-content {
+            flex: 1;
+        }
+        .alert-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .alert-message {
+            font-size: 14px;
+        }
+        .alert-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.7;
+            margin-left: 12px;
+            transition: opacity 0.2s;
+        }
+        .alert-close:hover {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
+    <!-- Alert Container -->
+    <div class="alert-container" id="alertContainer"></div>
+    
     <div class="max-w-6xl w-full flex rounded-2xl overflow-hidden shadow-soft">
         <!-- Left Panel - Illustration/Info -->
         <div class="hidden md:flex md:w-1/2 bg-gradient-to-br from-blue-50 to-indigo-100 p-10 flex-col justify-between">
@@ -100,6 +164,22 @@
                     </div>
                 @endif
                 
+                @if(session('success'))
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            showAlert('success', 'Berhasil', '{{ session('success') }}');
+                        });
+                    </script>
+                @endif
+                
+                @if(session('error'))
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            showAlert('error', 'Gagal', '{{ session('error') }}');
+                        });
+                    </script>
+                @endif
+                
                 <form method="POST" action="{{ route('admin.login') }}">
                     @csrf
                     <div class="space-y-5">
@@ -113,6 +193,7 @@
                                     type="email" 
                                     id="email" 
                                     name="email" 
+                                    value="{{ old('email') }}"
                                     class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
                                     placeholder="admin@mercubuana-yogya.ac.id"
                                     required
@@ -130,10 +211,13 @@
                                     type="password" 
                                     id="password" 
                                     name="password" 
-                                    class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+                                    class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
                                     placeholder="Masukkan kata sandi"
                                     required
                                 >
+                                <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition duration-150">
+                                    <i class="fas fa-eye"></i>
+                                </button>
                             </div>
                         </div>
                         
@@ -188,5 +272,94 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Toggle Password Visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Alert Function
+        function showAlert(type, title, message, duration = 5000) {
+            const alertContainer = document.getElementById('alertContainer');
+            
+            // Create alert element
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            
+            // Set icon based on type
+            let icon = '';
+            if (type === 'success') {
+                icon = '<i class="fas fa-check-circle"></i>';
+            } else if (type === 'error') {
+                icon = '<i class="fas fa-exclamation-circle"></i>';
+            }
+            
+            // Set alert content
+            alert.innerHTML = `
+                ${icon}
+                <div class="alert-content">
+                    <div class="alert-title">${title}</div>
+                    <div class="alert-message">${message}</div>
+                </div>
+                <button class="alert-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            // Add to container
+            alertContainer.appendChild(alert);
+            
+            // Show alert with animation
+            setTimeout(() => {
+                alert.classList.add('show');
+            }, 10);
+            
+            // Close button functionality
+            const closeBtn = alert.querySelector('.alert-close');
+            closeBtn.addEventListener('click', () => {
+                closeAlert(alert);
+            });
+            
+            // Auto close after duration
+            if (duration > 0) {
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        closeAlert(alert);
+                    }
+                }, duration);
+            }
+        }
+        
+        function closeAlert(alert) {
+            alert.classList.remove('show');
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 400);
+        }
+
+        // Show alerts from backend if any
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if there are any validation errors
+            const errorElements = document.querySelector('.bg-red-50');
+            if (errorElements) {
+                const errorText = errorElements.querySelector('.text-red-700').textContent;
+                showAlert('error', 'Login Gagal', errorText);
+            }
+        });
+    </script>
 </body>
 </html>
