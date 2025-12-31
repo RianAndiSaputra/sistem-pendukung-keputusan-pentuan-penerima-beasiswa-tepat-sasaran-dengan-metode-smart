@@ -19,7 +19,7 @@
     <div class="h-full px-3 pb-20 overflow-y-auto bg-white">
         <ul class="space-y-1 font-medium mt-4">
 
-            <!-- Dashboard -->
+            <!-- Dashboard (Semua role bisa akses) -->
             <li>
                 <a href="{{ route('dashboard') }}" 
                    class="flex items-center p-3 rounded-xl transition duration-150
@@ -29,37 +29,44 @@
                 </a>
             </li>
 
-            <!-- Data Mahasiswa -->
-            <li>
-                <a href="{{ route('mahasiswa.index') }}" 
-                   class="flex items-center p-3 rounded-xl transition duration-150
-                   {{ request()->routeIs('mahasiswa.*') ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
-                    <i data-lucide="users" class="w-5 h-5 {{ request()->routeIs('mahasiswa.*') ? 'stroke-blue-600' : 'stroke-gray-400 group-hover:stroke-blue-600' }}"></i>
-                    <span class="ml-3">Data Mahasiswa</span>
-                </a>
-            </li>
+            @php
+                $userRole = auth('admin')->user()->role;
+            @endphp
 
-            <!-- Kriteria & Bobot -->
-            <li>
-                <a href="{{ route('kriteria.index') }}" 
-                   class="flex items-center p-3 rounded-xl transition duration-150
-                   {{ request()->routeIs('kriteria.*') ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
-                    <i data-lucide="settings" class="w-5 h-5 {{ request()->routeIs('kriteria.*') ? 'stroke-blue-600' : 'stroke-gray-400 group-hover:stroke-blue-600' }}"></i>
-                    <span class="ml-3">Kriteria & Bobot</span>
-                </a>
-            </li>
+            <!-- Untuk SUPER ADMIN dan OPERATOR -->
+            @if(in_array($userRole, ['super_admin', 'operator']))
+                <!-- Data Mahasiswa -->
+                <li>
+                    <a href="{{ route('mahasiswa.index') }}" 
+                       class="flex items-center p-3 rounded-xl transition duration-150
+                       {{ request()->routeIs('mahasiswa.*') ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
+                        <i data-lucide="users" class="w-5 h-5 {{ request()->routeIs('mahasiswa.*') ? 'stroke-blue-600' : 'stroke-gray-400 group-hover:stroke-blue-600' }}"></i>
+                        <span class="ml-3">Data Mahasiswa</span>
+                    </a>
+                </li>
 
-            <!-- Perhitungan SMART -->
-            <li>
-                <a href="{{ route('perhitungan.index') }}" 
-                   class="flex items-center p-3 rounded-xl transition duration-150
-                   {{ request()->routeIs('perhitungan.*') ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
-                    <i data-lucide="calculator" class="w-5 h-5 {{ request()->routeIs('perhitungan.*') ? 'stroke-blue-600' : 'stroke-gray-400 group-hover:stroke-blue-600' }}"></i>
-                    <span class="ml-3">Perhitungan SMART</span>
-                </a>
-            </li>
+                <!-- Kriteria & Bobot -->
+                <li>
+                    <a href="{{ route('kriteria.index') }}" 
+                       class="flex items-center p-3 rounded-xl transition duration-150
+                       {{ request()->routeIs('kriteria.*') ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
+                        <i data-lucide="settings" class="w-5 h-5 {{ request()->routeIs('kriteria.*') ? 'stroke-blue-600' : 'stroke-gray-400 group-hover:stroke-blue-600' }}"></i>
+                        <span class="ml-3">Kriteria & Bobot</span>
+                    </a>
+                </li>
 
-            <!-- Hasil Seleksi -->
+                <!-- Perhitungan SMART -->
+                <li>
+                    <a href="{{ route('perhitungan.index') }}" 
+                       class="flex items-center p-3 rounded-xl transition duration-150
+                       {{ request()->routeIs('perhitungan.*') ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
+                        <i data-lucide="calculator" class="w-5 h-5 {{ request()->routeIs('perhitungan.*') ? 'stroke-blue-600' : 'stroke-gray-400 group-hover:stroke-blue-600' }}"></i>
+                        <span class="ml-3">Perhitungan SMART</span>
+                    </a>
+                </li>
+            @endif
+
+            <!-- Hasil Seleksi (Semua role bisa akses) -->
             <li>
                 <a href="{{ route('hasil.index') }}" 
                    class="flex items-center p-3 rounded-xl transition duration-150
@@ -69,37 +76,44 @@
                 </a>
             </li>
 
-            <!-- Periode Seleksi -->
-            <li>
-                <a href="{{ route('periode.index') }}" 
-                   class="flex items-center p-3 rounded-xl transition duration-150
-                   {{ request()->routeIs('periode.*') ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
-                    <i data-lucide="calendar" class="w-5 h-5 {{ request()->routeIs('periode.*') ? 'stroke-blue-600' : 'stroke-gray-400 group-hover:stroke-blue-600' }}"></i>
-                    <span class="ml-3">Periode Seleksi</span>
-                </a>
-            </li>
-
-            <!-- Manajemen Admin -->
-            @if(auth('admin')->user()->role === 'super_admin')
-            <li>
-                <a href="{{ route('admin.index') }}" 
-                   class="flex items-center p-3 rounded-xl transition duration-150
-                   {{ request()->routeIs('admin.*') ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
-                    <i data-lucide="shield-check" class="w-5 h-5 {{ request()->routeIs('admin.*') ? 'stroke-blue-600' : 'stroke-gray-400 group-hover:stroke-blue-600' }}"></i>
-                    <span class="ml-3">Manajemen Admin</span>
-                </a>
-            </li>
+            <!-- Untuk SUPER ADMIN dan OPERATOR -->
+            @if(in_array($userRole, ['super_admin', 'operator']))
+                <!-- Periode Seleksi -->
+                <li>
+                    <a href="{{ route('periode.index') }}" 
+                       class="flex items-center p-3 rounded-xl transition duration-150
+                       {{ request()->routeIs('periode.*') ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
+                        <i data-lucide="calendar" class="w-5 h-5 {{ request()->routeIs('periode.*') ? 'stroke-blue-600' : 'stroke-gray-400 group-hover:stroke-blue-600' }}"></i>
+                        <span class="ml-3">Periode Seleksi</span>
+                    </a>
+                </li>
             @endif
 
-            <!-- Laporan -->
-            <li>
-                <a href="{{ route('laporan.index') }}" 
-                   class="flex items-center p-3 rounded-xl transition duration-150
-                   {{ request()->routeIs('laporan.*') ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
-                    <i data-lucide="file-text" class="w-5 h-5 {{ request()->routeIs('laporan.*') ? 'stroke-blue-600' : 'stroke-gray-400 group-hover:stroke-blue-600' }}"></i>
-                    <span class="ml-3">Laporan</span>
-                </a>
-            </li>
+            <!-- Hanya SUPER ADMIN -->
+            @if($userRole === 'super_admin')
+                <li>
+                    <a href="{{ route('admin.index') }}" 
+                       class="flex items-center p-3 rounded-xl transition duration-150
+                       {{ request()->routeIs('admin.*') ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
+                        <i data-lucide="shield-check" class="w-5 h-5 {{ request()->routeIs('admin.*') ? 'stroke-blue-600' : 'stroke-gray-400 group-hover:stroke-blue-600' }}"></i>
+                        <span class="ml-3">Manajemen Admin</span>
+                    </a>
+                </li>
+            @endif
+
+            <!-- Untuk SUPER ADMIN dan OPERATOR -->
+            @if(in_array($userRole, ['super_admin', 'operator']))
+                <!-- Laporan -->
+                <li>
+                    <a href="{{ route('laporan.index') }}" 
+                       class="flex items-center p-3 rounded-xl transition duration-150
+                       {{ request()->routeIs('laporan.*') ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
+                        <i data-lucide="file-text" class="w-5 h-5 {{ request()->routeIs('laporan.*') ? 'stroke-blue-600' : 'stroke-gray-400 group-hover:stroke-blue-600' }}"></i>
+                        <span class="ml-3">Laporan</span>
+                    </a>
+                </li>
+            @endif
+
         </ul>
 
         <!-- Bottom -->

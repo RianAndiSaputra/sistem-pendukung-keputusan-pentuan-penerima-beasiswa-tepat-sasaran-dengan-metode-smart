@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminSeeder::class,
             KriteriaSeeder::class,
+            MahasiswaPeriodeSeeder::class,
         ]);
     }
 }

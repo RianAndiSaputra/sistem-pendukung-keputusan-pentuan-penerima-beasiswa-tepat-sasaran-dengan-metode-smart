@@ -84,9 +84,6 @@
                     <input type="text" name="name" required
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                            placeholder="Masukkan nama lengkap">
-                    @error('name')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <!-- Email -->
@@ -95,9 +92,6 @@
                     <input type="email" name="email" required
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                            placeholder="admin@example.com">
-                    @error('email')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <!-- Password -->
@@ -106,9 +100,6 @@
                     <input type="password" name="password" required
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                            placeholder="Minimal 6 karakter">
-                    @error('password')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <!-- Role -->
@@ -118,12 +109,8 @@
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Pilih Role</option>
                         <option value="operator">Operator</option>
-                        <option value="viewer">Viewer</option>
                         <option value="super_admin">Super Admin</option>
                     </select>
-                    @error('role')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <!-- Role Description -->
@@ -317,38 +304,7 @@ function openDeleteModal(id, name) {
     openModal('deleteAdminModal');
 }
 
-// Success message handling
-@if(session('success'))
-    document.addEventListener('DOMContentLoaded', function() {
-        showNotification('{{ session('success') }}', 'success');
-    });
-@endif
-
-@if(session('error'))
-    document.addEventListener('DOMContentLoaded', function() {
-        showNotification('{{ session('error') }}', 'error');
-    });
-@endif
-
-function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-        type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-    }`;
-    notification.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2"></i>
-            <span>${message}</span>
-        </div>
-    `;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.remove();
-    }, 5000);
-}
-
-// Password strength indicator (optional enhancement)
+// Password strength indicator
 document.addEventListener('DOMContentLoaded', function() {
     const passwordInput = document.querySelector('input[name="password"]');
     if (passwordInput) {
@@ -357,7 +313,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const strengthIndicator = document.getElementById('passwordStrength');
             
             if (!strengthIndicator) {
-                // Create strength indicator if it doesn't exist
                 const indicator = document.createElement('div');
                 indicator.id = 'passwordStrength';
                 indicator.className = 'text-xs mt-1';

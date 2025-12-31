@@ -90,19 +90,42 @@ class MahasiswaController extends Controller
         return redirect()->route('mahasiswa.index')->with('success', 'Data mahasiswa berhasil ditambahkan.');
     }
 
-    public function show(Mahasiswa $mahasiswa)
+    public function show(Request $request, $id)
     {
-        return view('mahasiswa.show', compact('mahasiswa'));
+        $mahasiswa = Mahasiswa::with('periode')->findOrFail($id);
+        
+        // Untuk AJAX request dari modal detail
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => $mahasiswa
+            ]);
+        }
+        
+        // Fallback: redirect ke index jika diakses langsung via URL
+        return redirect()->route('mahasiswa.index');
     }
 
-    public function edit(Mahasiswa $mahasiswa)
+    public function edit(Request $request, $id)
     {
-        $periodes = PeriodeSeleksi::where('is_active', true)->get();
-        return view('mahasiswa.edit', compact('mahasiswa', 'periodes'));
+        $mahasiswa = Mahasiswa::findOrFail($id);
+        
+        // Untuk AJAX request dari modal edit
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => $mahasiswa
+            ]);
+        }
+        
+        // Fallback: redirect ke index jika diakses langsung via URL
+        return redirect()->route('mahasiswa.index');
     }
 
-    public function update(Request $request, Mahasiswa $mahasiswa)
+    public function update(Request $request, $id)
     {
+        $mahasiswa = Mahasiswa::findOrFail($id);
+        
         // Format penghasilan - hapus pemisah ribuan
         $penghasilan = str_replace('.', '', $request->penghasilan_ortu);
         
@@ -146,15 +169,43 @@ class MahasiswaController extends Controller
         return redirect()->route('mahasiswa.index')->with('success', 'Data mahasiswa berhasil diperbarui.');
     }
 
-    public function destroy(Mahasiswa $mahasiswa)
+    public function destroy(Request $request, $id)
     {
-        // Delete files
-        if ($mahasiswa->khs_file) Storage::disk('public')->delete($mahasiswa->khs_file);
-        if ($mahasiswa->penghasilan_file) Storage::disk('public')->delete($mahasiswa->penghasilan_file);
-        if ($mahasiswa->sertifikat_file) Storage::disk('public')->delete($mahasiswa->sertifikat_file);
+        try {
+            $mahasiswa = Mahasiswa::findOrFail($id);
+            $mahasiswaName = $mahasiswa->nama;
+            
+            // Delete files
+            if ($mahasiswa->khs_file) Storage::disk('public')->delete($mahasiswa->khs_file);
+            if ($mahasiswa->penghasilan_file) Storage::disk('public')->delete($mahasiswa->penghasilan_file);
+            if ($mahasiswa->sertifikat_file) Storage::disk('public')->delete($mahasiswa->sertifikat_file);
 
-        $mahasiswa->delete();
+            $mahasiswa->delete();
 
-        return redirect()->route('mahasiswa.index')->with('success', 'Data mahasiswa berhasil dihapus.');
+            // Untuk AJAX request dari modal delete
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data mahasiswa ' . $mahasiswaName . ' berhasil dihapus.'
+                ]);
+            }
+
+            // Untuk regular form submission
+            return redirect()->route('mahasiswa.index')
+                ->with('success', 'Data mahasiswa ' . $mahasiswaName . ' berhasil dihapus.');
+
+        } catch (\Exception $e) {
+            // Untuk AJAX request
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menghapus data: ' . $e->getMessage()
+                ], 500);
+            }
+
+            // Untuk regular request
+            return redirect()->route('mahasiswa.index')
+                ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
     }
 }

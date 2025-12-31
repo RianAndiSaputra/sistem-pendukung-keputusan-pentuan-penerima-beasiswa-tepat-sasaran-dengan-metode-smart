@@ -116,14 +116,14 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
-                                <button onclick="openEditModal({{ $mahasiswa }})" 
+                                <button onclick="openEditModal({{ $mahasiswa->id }})" 
                                    class="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition duration-200">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-edit">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                     </svg>
                                 </button>
-                                <button onclick="openDetailModal({{ $mahasiswa }})" 
+                                <button onclick="openDetailModal({{ $mahasiswa->id }})" 
                                    class="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition duration-200">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye">
                                         <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
@@ -193,12 +193,17 @@
                     <select name="prodi" required
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Pilih Prodi</option>
+                        <option value="Agroteknologi">Agroteknologi</option>
+                        <option value="Industri Peternakan">Industri Peternakan</option>
+                        <option value="Teknologi Hasil Pertanian">Teknologi Hasil Pertanian</option>
+                        <option value="Magister Ilmu Pangan">Magister Ilmu Pangan</option>
                         <option value="Teknik Informatika">Teknik Informatika</option>
                         <option value="Sistem Informasi">Sistem Informasi</option>
                         <option value="Manajemen">Manajemen</option>
                         <option value="Akuntansi">Akuntansi</option>
-                        <option value="Hukum">Hukum</option>
+                        <option value="Ilmu Komunikasi dan Multimedia">Ilmu Komunikasi dan Multimedia</option>
                         <option value="Psikologi">Psikologi</option>
+                        <option value="Magister Psikologi Sains">Magister Psikologi Sains</option>
                     </select>
                 </div>
 
@@ -357,7 +362,6 @@
             @csrf
             @method('PUT')
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto p-2">
-                <!-- Form fields sama seperti create modal -->
                 <!-- NIM -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">NIM *</label>
@@ -378,12 +382,17 @@
                     <select name="prodi" id="edit_prodi" required
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Pilih Prodi</option>
+                        <option value="Agroteknologi">Agroteknologi</option>
+                        <option value="Industri Peternakan">Industri Peternakan</option>
+                        <option value="Teknologi Hasil Pertanian">Teknologi Hasil Pertanian</option>
+                        <option value="Magister Ilmu Pangan">Magister Ilmu Pangan</option>
                         <option value="Teknik Informatika">Teknik Informatika</option>
                         <option value="Sistem Informasi">Sistem Informasi</option>
                         <option value="Manajemen">Manajemen</option>
                         <option value="Akuntansi">Akuntansi</option>
-                        <option value="Hukum">Hukum</option>
+                        <option value="Ilmu Komunikasi dan Multimedia">Ilmu Komunikasi dan Multimedia</option>
                         <option value="Psikologi">Psikologi</option>
+                        <option value="Magister Psikologi Sains">Magister Psikologi Sains</option>
                     </select>
                 </div>
 
@@ -522,90 +531,564 @@
     </div>
 </div>
 
-<!-- Detail Modal & Delete Modal tetap sama seperti sebelumnya, hanya ganti icon dengan Lucide -->
-<!-- ... (kode untuk detail dan delete modal tetap sama, hanya ganti icon) ... -->
+<!-- Detail Modal -->
+<div id="detailMahasiswaModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center pb-3 border-b">
+            <h3 class="text-xl font-semibold text-gray-800">Detail Data Mahasiswa</h3>
+            <button onclick="closeModal('detailMahasiswaModal')" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x">
+                    <path d="M18 6 6 18"/>
+                    <path d="m6 6 12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="mt-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Informasi Dasar -->
+                <div class="space-y-4">
+                    <h4 class="text-lg font-semibold text-gray-800 border-b pb-2">Informasi Dasar</h4>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">NIM</label>
+                        <p id="detail_nim" class="mt-1 font-mono text-gray-900"></p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">Nama Lengkap</label>
+                        <p id="detail_nama" class="mt-1 text-gray-900"></p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">Program Studi</label>
+                        <p id="detail_prodi" class="mt-1 text-gray-900"></p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">Semester</label>
+                        <p id="detail_semester" class="mt-1 text-gray-900"></p>
+                    </div>
+                </div>
+
+                <!-- Informasi Akademik -->
+                <div class="space-y-4">
+                    <h4 class="text-lg font-semibold text-gray-800 border-b pb-2">Informasi Akademik & Ekonomi</h4>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">IPK</label>
+                        <p id="detail_ipk" class="mt-1"></p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">Penghasilan Orang Tua</label>
+                        <p id="detail_penghasilan" class="mt-1 text-gray-900"></p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">Jumlah Tanggungan</label>
+                        <p id="detail_tanggungan" class="mt-1 text-gray-900"></p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">Tingkat Prestasi</label>
+                        <p id="detail_prestasi" class="mt-1 text-gray-900"></p>
+                    </div>
+                </div>
+
+                <!-- Informasi Periode -->
+                <div class="space-y-4 md:col-span-2">
+                    <h4 class="text-lg font-semibold text-gray-800 border-b pb-2">Informasi Periode & Dokumen</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Periode Seleksi</label>
+                            <p id="detail_periode" class="mt-1 text-gray-900"></p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Status</label>
+                            <p id="detail_status" class="mt-1 text-gray-900"></p>
+                        </div>
+                    </div>
+
+                    <!-- Dokumen -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-500 mb-3">Dokumen Pendukung</label>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div id="detail_khs_file" class="border rounded-lg p-3 bg-gray-50">
+                                <p class="text-sm font-medium text-gray-700 mb-2">File KHS</p>
+                                <!-- File akan ditampilkan via JavaScript -->
+                            </div>
+                            
+                            <div id="detail_penghasilan_file" class="border rounded-lg p-3 bg-gray-50">
+                                <p class="text-sm font-medium text-gray-700 mb-2">File Penghasilan</p>
+                                <!-- File akan ditampilkan via JavaScript -->
+                            </div>
+                            
+                            <div id="detail_sertifikat_file" class="border rounded-lg p-3 bg-gray-50">
+                                <p class="text-sm font-medium text-gray-700 mb-2">File Sertifikat</p>
+                                <!-- File akan ditampilkan via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
+                <button onclick="closeModal('detailMahasiswaModal')"
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-200 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x mr-2">
+                        <path d="M18 6 6 18"/>
+                        <path d="m6 6 12 12"/>
+                    </svg>
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="deleteMahasiswaModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center pb-3 border-b">
+            <h3 class="text-xl font-semibold text-gray-800">Konfirmasi Hapus</h3>
+            <button onclick="closeModal('deleteMahasiswaModal')" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x">
+                    <path d="M18 6 6 18"/>
+                    <path d="m6 6 12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="mt-4 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-triangle text-red-600">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                    <path d="M12 9v4"/>
+                    <path d="M12 17h.01"/>
+                </svg>
+            </div>
+            
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Apakah Anda yakin?</h3>
+            <p class="text-gray-600 mb-6">
+                Anda akan menghapus data mahasiswa: 
+                <span id="deleteMahasiswaName" class="font-semibold text-red-600"></span>
+                <br>
+                <span class="text-sm text-red-500">Aksi ini tidak dapat dibatalkan!</span>
+            </p>
+            
+            <!-- FORM DELETE - PENTING: action dikosongkan, akan diisi JavaScript -->
+            <form id="deleteMahasiswaForm" method="POST" action="" class="inline">
+                <!-- CSRF Token akan otomatis ada dari Laravel -->
+                @csrf
+                @method('DELETE')
+                <div class="flex justify-center space-x-3">
+                    <button type="button" onclick="closeModal('deleteMahasiswaModal')"
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-200">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2 mr-2">
+                            <path d="M3 6h18"/>
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                            <line x1="10" x2="10" y1="11" y2="17"/>
+                            <line x1="14" x2="14" y1="11" y2="17"/>
+                        </svg>
+                        Ya, Hapus
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @push('scripts')
 <script>
-// Modal functions
-function openModal(modalId) {
-    document.getElementById(modalId).classList.remove('hidden');
-}
-
-function closeModal(modalId) {
-    document.getElementById(modalId).classList.add('hidden');
-}
-
-// Close modal when clicking outside
-document.addEventListener('click', function(event) {
-    if (event.target.classList.contains('fixed')) {
-        event.target.classList.add('hidden');
+    // Modal functions
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
     }
-});
 
-// Format IPK input
-document.addEventListener('DOMContentLoaded', function() {
-    const ipkInput = document.getElementById('ipk_input');
-    const editIpkInput = document.getElementById('edit_ipk');
-    const penghasilanInput = document.getElementById('penghasilan_input');
-    const editPenghasilanInput = document.getElementById('edit_penghasilan_ortu');
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+    }
 
-    // Format IPK
-    if (ipkInput) {
-        ipkInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^0-9.]/g, '');
-            let parts = value.split('.');
-            
-            if (parts.length > 2) {
-                value = parts[0] + '.' + parts.slice(1).join('');
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('fixed')) {
+            event.target.classList.add('hidden');
+        }
+    });
+
+    // Format IPK input
+    document.addEventListener('DOMContentLoaded', function() {
+        const ipkInput = document.getElementById('ipk_input');
+        const editIpkInput = document.getElementById('edit_ipk');
+        const penghasilanInput = document.getElementById('penghasilan_input');
+        const editPenghasilanInput = document.getElementById('edit_penghasilan_ortu');
+
+        // Format IPK
+        if (ipkInput) {
+            ipkInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^0-9.]/g, '');
+                let parts = value.split('.');
+                
+                if (parts.length > 2) {
+                    value = parts[0] + '.' + parts.slice(1).join('');
+                }
+                
+                if (parts.length === 2 && parts[1].length > 2) {
+                    value = parts[0] + '.' + parts[1].substring(0, 2);
+                }
+                
+                e.target.value = value;
+            });
+        }
+
+        if (editIpkInput) {
+            editIpkInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^0-9.]/g, '');
+                let parts = value.split('.');
+                
+                if (parts.length > 2) {
+                    value = parts[0] + '.' + parts.slice(1).join('');
+                }
+                
+                if (parts.length === 2 && parts[1].length > 2) {
+                    value = parts[0] + '.' + parts[1].substring(0, 2);
+                }
+                
+                e.target.value = value;
+            });
+        }
+
+        // Format Penghasilan dengan titik pemisah ribuan
+        function formatRupiahInput(input) {
+            input.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^0-9]/g, '');
+                
+                if (value) {
+                    value = parseInt(value, 10).toLocaleString('id-ID');
+                }
+                
+                e.target.value = value;
+            });
+        }
+
+        if (penghasilanInput) formatRupiahInput(penghasilanInput);
+        if (editPenghasilanInput) formatRupiahInput(editPenghasilanInput);
+
+        // File upload feedback
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(input => {
+            input.addEventListener('change', function(e) {
+                const container = this.closest('.file-upload-container');
+                const fileName = this.files[0] ? this.files[0].name : 'Belum ada file';
+                
+                let statusText = container.querySelector('.file-status') || document.createElement('p');
+                statusText.className = 'file-status text-xs text-blue-600 mt-2 font-medium';
+                statusText.textContent = `File: ${fileName}`;
+                
+                if (!container.querySelector('.file-status')) {
+                    container.appendChild(statusText);
+                }
+            });
+        });
+
+        // Setup delete form handler
+        setupDeleteForm();
+    });
+
+    // Edit modal function dengan AJAX
+    function openEditModal(mahasiswaId) {
+        // Fetch data mahasiswa via AJAX
+        fetch(`/mahasiswa/${mahasiswaId}/edit`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
             }
-            
-            if (parts.length === 2 && parts[1].length > 2) {
-                value = parts[0] + '.' + parts[1].substring(0, 2);
+        })
+        .then(response => {
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('Data mahasiswa tidak ditemukan');
+                }
+                throw new Error('Network response was not ok: ' + response.status);
             }
-            
-            e.target.value = value;
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                const mahasiswa = data.data;
+                
+                // Fill form data
+                document.getElementById('edit_nim').value = mahasiswa.nim || '';
+                document.getElementById('edit_nama').value = mahasiswa.nama || '';
+                document.getElementById('edit_prodi').value = mahasiswa.prodi || '';
+                document.getElementById('edit_semester').value = mahasiswa.semester || '';
+                document.getElementById('edit_ipk').value = mahasiswa.ipk || '';
+                
+                // Format penghasilan untuk edit
+                const penghasilan = mahasiswa.penghasilan_ortu ? 
+                    parseInt(mahasiswa.penghasilan_ortu).toLocaleString('id-ID') : '';
+                document.getElementById('edit_penghasilan_ortu').value = penghasilan;
+                
+                document.getElementById('edit_jumlah_tanggungan').value = mahasiswa.jumlah_tanggungan || '';
+                document.getElementById('edit_prestasi').value = mahasiswa.prestasi || '';
+                document.getElementById('edit_periode_id').value = mahasiswa.periode_id || '';
+                
+                // Update form action
+                const form = document.getElementById('editMahasiswaForm');
+                if (form) {
+                    form.action = `/mahasiswa/${mahasiswaId}`;
+                }
+                
+                openModal('editMahasiswaModal');
+            } else {
+                showAlert('error', 'Error', data.message || 'Gagal memuat data mahasiswa');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('error', 'Error', 'Terjadi kesalahan saat memuat data: ' + error.message);
         });
     }
 
-    if (editIpkInput) {
-        editIpkInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^0-9.]/g, '');
-            let parts = value.split('.');
-            
-            if (parts.length > 2) {
-                value = parts[0] + '.' + parts.slice(1).join('');
+    // Detail modal function dengan AJAX
+    function openDetailModal(mahasiswaId) {
+        // Fetch data mahasiswa via AJAX
+        fetch(`/mahasiswa/${mahasiswaId}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
             }
-            
-            if (parts.length === 2 && parts[1].length > 2) {
-                value = parts[0] + '.' + parts[1].substring(0, 2);
+        })
+        .then(response => {
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('Data mahasiswa tidak ditemukan');
+                }
+                throw new Error('Network response was not ok: ' + response.status);
             }
-            
-            e.target.value = value;
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                const mahasiswa = data.data;
+                
+                // Fill detail data dengan null check
+                document.getElementById('detail_nim').textContent = mahasiswa.nim || 'Tidak ada data';
+                document.getElementById('detail_nama').textContent = mahasiswa.nama || 'Tidak ada data';
+                document.getElementById('detail_prodi').textContent = mahasiswa.prodi || 'Tidak ada data';
+                document.getElementById('detail_semester').textContent = mahasiswa.semester ? 
+                    `Semester ${mahasiswa.semester}` : 'Tidak ada data';
+                
+                // IPK dengan warna
+                const ipkElement = document.getElementById('detail_ipk');
+                if (mahasiswa.ipk) {
+                    ipkElement.textContent = mahasiswa.ipk;
+                    ipkElement.className = 'mt-1 px-2 py-1 text-sm font-semibold rounded-full inline-block ' + 
+                        (mahasiswa.ipk >= 3.5 ? 'bg-green-100 text-green-800' : 
+                         (mahasiswa.ipk >= 3.0 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'));
+                } else {
+                    ipkElement.textContent = 'Tidak ada data';
+                    ipkElement.className = 'mt-1 px-2 py-1 text-sm font-semibold rounded-full inline-block bg-gray-100 text-gray-800';
+                }
+                
+                // Format penghasilan
+                const penghasilanElement = document.getElementById('detail_penghasilan');
+                if (mahasiswa.penghasilan_ortu) {
+                    const penghasilan = new Intl.NumberFormat('id-ID', {
+                        style: 'currency',
+                        currency: 'IDR',
+                        minimumFractionDigits: 0
+                    }).format(mahasiswa.penghasilan_ortu);
+                    penghasilanElement.textContent = penghasilan;
+                } else {
+                    penghasilanElement.textContent = 'Tidak ada data';
+                }
+                
+                document.getElementById('detail_tanggungan').textContent = mahasiswa.jumlah_tanggungan ? 
+                    mahasiswa.jumlah_tanggungan + ' orang' : 'Tidak ada data';
+                
+                // Prestasi text
+                const prestasiText = {
+                    '1': 'Tidak memiliki sertifikat/prestasi',
+                    '2': 'Sertifikat partisipasi (tanpa juara)',
+                    '3': 'Juara lomba tingkat kampus/kota',
+                    '4': 'Juara provinsi / memiliki ≥2 sertifikat prestasi',
+                    '5': 'Juara nasional atau internasional'
+                };
+                const prestasiValue = mahasiswa.prestasi ? mahasiswa.prestasi.toString() : '';
+                document.getElementById('detail_prestasi').textContent = prestasiText[prestasiValue] || 'Tidak ada data';
+                
+                // Periode
+                const periodeText = mahasiswa.periode ? 
+                    (mahasiswa.periode.nama_periode || 'Tidak ada data') : 'Tidak ada data';
+                document.getElementById('detail_periode').textContent = periodeText;
+                
+                // Status (jika ada field status)
+                const statusElement = document.getElementById('detail_status');
+                if (mahasiswa.status) {
+                    statusElement.textContent = mahasiswa.status;
+                    statusElement.className = 'mt-1 px-2 py-1 text-sm font-semibold rounded-full inline-block ' +
+                        (mahasiswa.status === 'diterima' ? 'bg-green-100 text-green-800' :
+                         mahasiswa.status === 'ditolak' ? 'bg-red-100 text-red-800' :
+                         'bg-yellow-100 text-yellow-800');
+                } else {
+                    statusElement.textContent = 'Menunggu seleksi';
+                    statusElement.className = 'mt-1 px-2 py-1 text-sm font-semibold rounded-full inline-block bg-gray-100 text-gray-800';
+                }
+                
+                // Dokumen files
+                displayDocument('detail_khs_file', mahasiswa.khs_file, 'KHS');
+                displayDocument('detail_penghasilan_file', mahasiswa.penghasilan_file, 'Penghasilan');
+                displayDocument('detail_sertifikat_file', mahasiswa.sertifikat_file, 'Sertifikat');
+                
+                openModal('detailMahasiswaModal');
+            } else {
+                showAlert('error', 'Error', data.message || 'Gagal memuat detail mahasiswa');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('error', 'Error', 'Terjadi kesalahan saat memuat detail: ' + error.message);
         });
     }
 
-    // Format Penghasilan dengan titik pemisah ribuan
-    function formatRupiahInput(input) {
-        input.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^0-9]/g, '');
+    // Function untuk menampilkan dokumen
+    function displayDocument(elementId, fileName, docType) {
+        const element = document.getElementById(elementId);
+        
+        if (!element) {
+            console.error(`Element ${elementId} tidak ditemukan`);
+            return;
+        }
+        
+        if (fileName) {
+            // Dapatkan ekstensi file
+            const fileExt = fileName.split('.').pop().toLowerCase();
+            const isPdf = fileExt === 'pdf';
+            const isImage = ['jpg', 'jpeg', 'png', 'gif'].includes(fileExt);
             
-            if (value) {
-                value = parseInt(value, 10).toLocaleString('id-ID');
+            // Buat URL untuk file (asumsi file disimpan di storage public)
+            const fileUrl = `/storage/${fileName}`;
+            
+            let content = '';
+            if (isImage) {
+                content = `
+                    <div class="mb-2">
+                        <img src="${fileUrl}" alt="${docType}" class="w-full h-32 object-cover rounded" 
+                             onerror="this.onerror=null; this.src='/placeholder-image.jpg';">
+                    </div>
+                    <a href="${fileUrl}" target="_blank" 
+                       class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link mr-1">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                            <polyline points="15 3 21 3 21 9"/>
+                            <line x1="10" x2="21" y1="14" y2="3"/>
+                        </svg>
+                        Lihat ${docType}
+                    </a>
+                `;
+            } else if (isPdf) {
+                content = `
+                    <div class="mb-2 flex items-center justify-center h-24 bg-red-50 rounded">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text text-red-500">
+                            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/>
+                            <path d="M14 2v4a2 2 0 0 0 2 2h4"/>
+                            <path d="M10 9H8"/>
+                            <path d="M16 13H8"/>
+                            <path d="M16 17H8"/>
+                        </svg>
+                    </div>
+                    <a href="${fileUrl}" target="_blank" 
+                       class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download mr-1">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" x2="12" y1="15" y2="3"/>
+                        </svg>
+                        Download ${docType}
+                    </a>
+                `;
+            } else {
+                content = `
+                    <p class="text-sm text-gray-500 mb-2">File tersedia</p>
+                    <a href="${fileUrl}" target="_blank" 
+                       class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download mr-1">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" x2="12" y1="15" y2="3"/>
+                        </svg>
+                        Download ${docType}
+                    </a>
+                `;
             }
             
-            e.target.value = value;
-        });
+            element.innerHTML = content;
+        } else {
+            element.innerHTML = `
+                <p class="text-sm text-gray-400 italic">Tidak ada file ${docType}</p>
+            `;
+        }
     }
 
-    if (penghasilanInput) formatRupiahInput(penghasilanInput);
-    if (editPenghasilanInput) formatRupiahInput(editPenghasilanInput);
+    // Delete modal function - SOLUSI SIMPLE
+    function openDeleteModal(id, name) {
+        console.log('Opening delete modal for ID:', id, 'Name:', name);
+        
+        // Set nama mahasiswa
+        const deleteNameElement = document.getElementById('deleteMahasiswaName');
+        if (deleteNameElement) {
+            deleteNameElement.textContent = name;
+        }
+        
+        // Update form action
+        const form = document.getElementById('deleteMahasiswaForm');
+        if (form) {
+            form.action = `/mahasiswa/${id}`;
+            console.log('Form action set to:', form.action);
+        }
+        
+        openModal('deleteMahasiswaModal');
+    }
+
+    // Setup delete form handler - SIMPLE SOLUTION
+    function setupDeleteForm() {
+        const deleteForm = document.getElementById('deleteMahasiswaForm');
+        if (!deleteForm) {
+            console.error('Delete form not found');
+            return;
+        }
+
+        console.log('Delete form found, setting up handler');
+        
+        // Hapus semua event listener lama
+        const newForm = deleteForm.cloneNode(true);
+        deleteForm.parentNode.replaceChild(newForm, deleteForm);
+        
+        // Tambahkan event listener untuk form submission
+        newForm.addEventListener('submit', function(e) {
+            // Biarkan form submit normal, Laravel akan handle redirect
+            console.log('Delete form will submit normally');
+            // Tidak perlu e.preventDefault() karena kita mau form submit normal
+        });
+    }
 
     // File upload feedback
     const fileInputs = document.querySelectorAll('input[type="file"]');
     fileInputs.forEach(input => {
         input.addEventListener('change', function(e) {
             const container = this.closest('.file-upload-container');
+            if (!container) return;
+            
             const fileName = this.files[0] ? this.files[0].name : 'Belum ada file';
             
             let statusText = container.querySelector('.file-status') || document.createElement('p');
@@ -617,72 +1100,54 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-});
 
-// Edit modal function
-function openEditModal(mahasiswa) {
-    // Fill form data
-    document.getElementById('edit_nim').value = mahasiswa.nim;
-    document.getElementById('edit_nama').value = mahasiswa.nama;
-    document.getElementById('edit_prodi').value = mahasiswa.prodi;
-    document.getElementById('edit_semester').value = mahasiswa.semester;
-    document.getElementById('edit_ipk').value = mahasiswa.ipk;
-    
-    // Format penghasilan untuk edit
-    const penghasilan = parseInt(mahasiswa.penghasilan_ortu).toLocaleString('id-ID');
-    document.getElementById('edit_penghasilan_ortu').value = penghasilan;
-    
-    document.getElementById('edit_jumlah_tanggungan').value = mahasiswa.jumlah_tanggungan;
-    document.getElementById('edit_prestasi').value = mahasiswa.prestasi;
-    document.getElementById('edit_periode_id').value = mahasiswa.periode_id;
-    
-    // Update form action
-    const form = document.getElementById('editMahasiswaForm');
-    form.action = `/mahasiswa/${mahasiswa.id}`;
-    
-    openModal('editMahasiswaModal');
-}
+    // Helper function untuk showAlert
+    window.showAlert = function(type, title, message, duration = 3000) {
+        // Coba gunakan alert system dari app.blade.js jika ada
+        if (typeof window.showAlertOriginal !== 'undefined') {
+            window.showAlertOriginal(type, title, message, duration);
+            return;
+        }
+        
+        // Fallback alert system
+        const alertContainer = document.getElementById('alertContainer') || document.body;
+        const alert = document.createElement('div');
+        alert.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+            type === 'success' ? 'bg-green-500 text-white' : 
+            type === 'error' ? 'bg-red-500 text-white' : 
+            type === 'warning' ? 'bg-yellow-500 text-white' : 
+            'bg-blue-500 text-white'
+        }`;
+        alert.innerHTML = `
+            <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide ${
+                    type === 'success' ? 'lucide-check-circle' : 
+                    type === 'error' ? 'lucide-alert-circle' : 
+                    type === 'warning' ? 'lucide-alert-triangle' : 
+                    'lucide-info'
+                } mr-2">
+                    ${type === 'success' ? 
+                        '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' :
+                    type === 'error' ?
+                        '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>' :
+                    type === 'warning' ?
+                        '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>' :
+                        '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="16"/><line x1="12" x2="12" y1="12" y2="8"/>'
+                    }
+                </svg>
+                <span>${message}</span>
+            </div>
+        `;
+        alertContainer.appendChild(alert);
 
-// Detail modal function (tetap sama seperti sebelumnya)
-function openDetailModal(mahasiswa) {
-    // ... kode detail modal tetap sama ...
-}
-
-// Delete modal function (tetap sama seperti sebelumnya)
-function openDeleteModal(id, name) {
-    // ... kode delete modal tetap sama ...
-}
-
-// Success message handling
-@if(session('success'))
-    document.addEventListener('DOMContentLoaded', function() {
-        showNotification('{{ session('success') }}', 'success');
-    });
-@endif
-
-function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-        type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-    }`;
-    notification.innerHTML = `
-        <div class="flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide ${type === 'success' ? 'lucide-check-circle' : 'lucide-alert-circle'} mr-2">
-                ${type === 'success' ? 
-                    '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' :
-                    '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>'
-                }
-            </svg>
-            <span>${message}</span>
-        </div>
-    `;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.remove();
+            }
+        }, duration);
+    };
 </script>
+
 @endpush
 
 <style>

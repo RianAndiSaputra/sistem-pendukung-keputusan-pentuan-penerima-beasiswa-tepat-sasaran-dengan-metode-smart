@@ -1,15 +1,21 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\MahasiswaController;
-use App\Http\Controllers\Admin\KriteriaController;
-use App\Http\Controllers\Admin\PerhitunganController;
-use App\Http\Controllers\Admin\HasilSeleksiController;
-use App\Http\Controllers\Admin\PeriodeController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\LaporanController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\PeriodeController;
+use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\KriteriaController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\MahasiswaController;
+use App\Http\Controllers\Admin\PerhitunganController;
+use App\Http\Controllers\Admin\HasilSeleksiController;
+
+// Redirect root URL ke login page
+Route::get('/', function () {
+    return redirect()->route('admin.login.form');
+});
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('admin.login.form');
@@ -20,8 +26,14 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
 Route::middleware(['auth:admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
-    // Mahasiswa Routes
-    Route::resource('mahasiswa', MahasiswaController::class);
+    // Mahasiswa Routes - menggunakan parameter biasa
+    Route::get('/mahasiswa', [MahasiswaController::class, 'index'])->name('mahasiswa.index');
+    Route::get('/mahasiswa/create', [MahasiswaController::class, 'create'])->name('mahasiswa.create');
+    Route::post('/mahasiswa', [MahasiswaController::class, 'store'])->name('mahasiswa.store');
+    Route::get('/mahasiswa/{id}', [MahasiswaController::class, 'show'])->name('mahasiswa.show');
+    Route::get('/mahasiswa/{id}/edit', [MahasiswaController::class, 'edit'])->name('mahasiswa.edit');
+    Route::put('/mahasiswa/{id}', [MahasiswaController::class, 'update'])->name('mahasiswa.update');
+    Route::delete('/mahasiswa/{id}', [MahasiswaController::class, 'destroy'])->name('mahasiswa.destroy');
     
     // Kriteria Routes
     Route::get('/kriteria', [KriteriaController::class, 'index'])->name('kriteria.index');
@@ -30,14 +42,21 @@ Route::middleware(['auth:admin'])->group(function () {
     // Perhitungan Routes
     Route::get('perhitungan', [PerhitunganController::class, 'index'])->name('perhitungan.index');
     Route::post('perhitungan/proses', [PerhitunganController::class, 'proses'])->name('perhitungan.proses');
+    Route::get('perhitungan/mahasiswa/{id}/detail', [PerhitunganController::class, 'getDetailMahasiswa'])->name('perhitungan.mahasiswa.detail');
     
     // Hasil Seleksi Routes
     Route::get('hasil', [HasilSeleksiController::class, 'index'])->name('hasil.index');
+    Route::get('hasil/{id}/detail', [HasilSeleksiController::class, 'getDetail'])->name('hasil.detail');
+    Route::get('hasil/export', [HasilSeleksiController::class, 'export'])->name('hasil.export');
     
     // Periode Routes
     Route::resource('periode', PeriodeController::class);
     
-    // Admin Management Routes - Tanpa middleware dulu untuk testing
+    // Tambahkan route khusus untuk modal AJAX
+    Route::get('periode/{periode}/modal', [PeriodeController::class, 'getForModal'])->name('periode.modal');
+    Route::get('periode/{periode}/ajax', [PeriodeController::class, 'getAjaxData'])->name('periode.ajax');
+    
+    // Admin Management Routes
     Route::get('admin', [AdminController::class, 'index'])->name('admin.index');
     Route::post('admin', [AdminController::class, 'store'])->name('admin.store');
     Route::put('admin/{admin}', [AdminController::class, 'update'])->name('admin.update');
@@ -46,10 +65,13 @@ Route::middleware(['auth:admin'])->group(function () {
     // Laporan Routes
     Route::get('laporan', [LaporanController::class, 'index'])->name('laporan.index');
     Route::get('laporan/cetak', [LaporanController::class, 'cetak'])->name('laporan.cetak');
-    // Di dalam group middleware auth:admin, tambahkan:
     Route::get('laporan/preview', [LaporanController::class, 'preview'])->name('laporan.preview');
-});
+    Route::get('laporan/komprehensif', [LaporanController::class, 'laporanKomprehensif'])->name('laporan.komprehensif');
+    Route::get('laporan/komprehensif/export', [LaporanController::class, 'exportKomprehensif'])->name('laporan.komprehensif.export');
 
-Route::get('/', function () {
-    return redirect('/dashboard');
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [ProfileController::class, 'show'])->name('show');
+        Route::put('/', [ProfileController::class, 'update'])->name('update');
+        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password');
+    });
 });

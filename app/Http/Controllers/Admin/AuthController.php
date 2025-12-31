@@ -18,16 +18,22 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required'
+        ], [
+            'email.required' => 'Email wajib diisi',
+            'email.email' => 'Format email tidak valid',
+            'password.required' => 'Password wajib diisi'
         ]);
 
-        if (Auth::guard('admin')->attempt($credentials)) {
+        if (Auth::guard('admin')->attempt($credentials, $request->filled('remember_me'))) {
             $request->session()->regenerate();
-            return redirect()->intended('/dashboard');
+            
+            return redirect()->intended('/dashboard')
+                ->with('success', 'Selamat datang! Anda berhasil login ke sistem.');
         }
 
-        return back()->withErrors([
-            'email' => 'Email atau password salah.',
-        ]);
+        return back()
+            ->withInput($request->only('email'))
+            ->with('error', 'Email atau password yang Anda masukkan salah. Silakan coba lagi.');
     }
 
     public function logout(Request $request)
@@ -35,6 +41,8 @@ class AuthController extends Controller
         Auth::guard('admin')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/login');
+        
+        return redirect('/login')
+            ->with('success', 'Anda telah berhasil logout dari sistem.');
     }
 }

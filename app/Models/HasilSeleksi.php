@@ -11,6 +11,7 @@ class HasilSeleksi extends Model
 
     protected $fillable = [
         'mahasiswa_id',
+        'periode_id', // TAMBAHKAN INI
         'skor_ipk',
         'skor_penghasilan',
         'skor_tanggungan',
@@ -23,5 +24,23 @@ class HasilSeleksi extends Model
     public function mahasiswa()
     {
         return $this->belongsTo(Mahasiswa::class);
+    }
+
+    // TAMBAHKAN RELASI KE PERIODE
+    public function periode()
+    {
+        return $this->belongsTo(PeriodeSeleksi::class);
+    }
+
+    // Scope untuk filter mudah
+    public function scopePeriode($query, $periodeId)
+    {
+        return $query->where('periode_id', $periodeId);
+    }
+
+    // Scope untuk yang lolos
+    public function scopeLolos($query)
+    {
+        return $query->where('status', true);
     }
 }
