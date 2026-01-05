@@ -255,7 +255,8 @@
                 <!-- Status Aktif -->
                 <div class="flex items-center p-3 border rounded-lg hover:bg-gray-50">
                     <input type="checkbox" name="is_active" id="is_active" value="1"
-                           class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                           class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                           {{ old('is_active') ? 'checked' : '' }}>
                     <label for="is_active" class="ml-2 text-sm text-gray-700 flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="20 6 9 17 4 12"/>
@@ -500,10 +501,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (tanggalMulaiInput && tanggalBerakhirInput) {
         // Set min date for tanggal mulai (today)
-        tanggalMulaiInput.min = new Date().toISOString().split('T')[0];
+        const today = new Date();
+        const todayFormatted = today.toISOString().split('T')[0];
+        tanggalMulaiInput.min = todayFormatted;
         
         tanggalMulaiInput.addEventListener('change', function() {
             tanggalBerakhirInput.min = this.value;
+            // Validasi jika tanggal berakhir sebelum tanggal mulai
+            if (tanggalBerakhirInput.value && tanggalBerakhirInput.value < this.value) {
+                tanggalBerakhirInput.value = this.value;
+            }
         });
         
         tanggalBerakhirInput.addEventListener('change', function() {
@@ -535,10 +542,13 @@ async function openEditModal(periodeId) {
         
         // Fill form data
         document.getElementById('edit_nama_periode').value = periode.nama_periode;
-        document.getElementById('edit_tanggal_mulai').value = periode.tanggal_mulai;
-        document.getElementById('edit_tanggal_berakhir').value = periode.tanggal_berakhir;
+        document.getElementById('edit_tanggal_mulai').value = periode.tanggal_mulai.split(' ')[0]; // Ambil hanya tanggal
+        document.getElementById('edit_tanggal_berakhir').value = periode.tanggal_berakhir.split(' ')[0]; // Ambil hanya tanggal
         document.getElementById('edit_kuota_penerima').value = periode.kuota_penerima;
-        document.getElementById('edit_is_active').checked = periode.is_active;
+        
+        // Handle checkbox - PERBAIKAN PENTING
+        const isActiveCheckbox = document.getElementById('edit_is_active');
+        isActiveCheckbox.checked = periode.is_active;
         
         // Update form action
         const form = document.getElementById('editPeriodeForm');
@@ -551,7 +561,6 @@ async function openEditModal(periodeId) {
         
         const statusInfo = document.getElementById('editStatusInfo');
         const statusText = document.getElementById('editStatusText');
-        const isActiveCheckbox = document.getElementById('edit_is_active');
         
         if (endDate < today) {
             statusInfo.classList.remove('hidden');
@@ -575,8 +584,15 @@ async function openEditModal(periodeId) {
         const editTanggalMulaiInput = document.getElementById('edit_tanggal_mulai');
         const editTanggalBerakhirInput = document.getElementById('edit_tanggal_berakhir');
         
+        // Set min date for edit form
+        const todayFormatted = today.toISOString().split('T')[0];
+        
         editTanggalMulaiInput.addEventListener('change', function() {
             editTanggalBerakhirInput.min = this.value;
+            // Validasi jika tanggal berakhir sebelum tanggal mulai
+            if (editTanggalBerakhirInput.value && editTanggalBerakhirInput.value < this.value) {
+                editTanggalBerakhirInput.value = this.value;
+            }
         });
         
         if (editTanggalMulaiInput.value) {
@@ -642,6 +658,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     });
 });
+
+// Prevent form submission if dates are invalid
+document.addEventListener('DOMContentLoaded', function() {
+    const createForm = document.querySelector('form[action="{{ route("periode.store") }}"]');
+    const editForm = document.getElementById('editPeriodeForm');
+    
+    function validateForm(form) {
+        const tanggalMulai = form.querySelector('input[name="tanggal_mulai"]');
+        const tanggalBerakhir = form.querySelector('input[name="tanggal_berakhir"]');
+        
+        if (tanggalMulai && tanggalBerakhir) {
+            const startDate = new Date(tanggalMulai.value);
+            const endDate = new Date(tanggalBerakhir.value);
+            
+            if (endDate < startDate) {
+                alert('Tanggal berakhir tidak boleh sebelum tanggal mulai!');
+                return false;
+            }
+            
+            if (endDate < new Date()) {
+                const confirmEndDate = confirm('Tanggal berakhir sudah lewat. Periode akan otomatis nonaktif. Lanjutkan?');
+                if (!confirmEndDate) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    if (createForm) {
+        createForm.addEventListener('submit', function(e) {
+            if (!validateForm(this)) {
+                e.preventDefault();
+            }
+        });
+    }
+    
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            if (!validateForm(this)) {
+                e.preventDefault();
+            }
+        });
+    }
+});
 </script>
 @endpush
 
@@ -684,6 +746,24 @@ input:focus, select:focus, textarea:focus {
 
 .modal-content::-webkit-scrollbar-thumb:hover {
     background: #a0aec0;
+}
+
+/* Checkbox styling */
+input[type="checkbox"]:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+input[type="checkbox"]:checked:after {
+    content: '';
+    position: absolute;
+    display: block;
+}
+
+/* Disabled state */
+input:disabled, button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 </style>
 @endsection

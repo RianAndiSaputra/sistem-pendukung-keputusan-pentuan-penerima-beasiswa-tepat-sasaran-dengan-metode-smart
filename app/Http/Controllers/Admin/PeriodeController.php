@@ -33,17 +33,26 @@ class PeriodeController extends Controller
             'kuota_penerima' => 'required|integer|min:1'
         ]);
 
+        // Handle checkbox value - jika tidak dicentang, set ke false
+        $is_active = $request->has('is_active') ? true : false;
+        
         // Cek jika periode melewati tanggal berakhir
         if (Carbon::parse($request->tanggal_berakhir)->isPast()) {
-            $request->merge(['is_active' => false]);
+            $is_active = false;
         }
 
         // Nonaktifkan periode lain jika yang baru aktif
-        if ($request->is_active) {
+        if ($is_active) {
             PeriodeSeleksi::where('is_active', true)->update(['is_active' => false]);
         }
 
-        PeriodeSeleksi::create($request->all());
+        PeriodeSeleksi::create([
+            'nama_periode' => $request->nama_periode,
+            'tanggal_mulai' => $request->tanggal_mulai,
+            'tanggal_berakhir' => $request->tanggal_berakhir,
+            'kuota_penerima' => $request->kuota_penerima,
+            'is_active' => $is_active
+        ]);
 
         return redirect()->route('periode.index')->with('success', 'Periode seleksi berhasil ditambahkan.');
     }
@@ -62,17 +71,26 @@ class PeriodeController extends Controller
             'kuota_penerima' => 'required|integer|min:1'
         ]);
 
+        // Handle checkbox value - jika tidak dicentang, set ke false
+        $is_active = $request->has('is_active') ? true : false;
+        
         // Cek jika periode melewati tanggal berakhir
         if (Carbon::parse($request->tanggal_berakhir)->isPast()) {
-            $request->merge(['is_active' => false]);
+            $is_active = false;
         }
 
         // Nonaktifkan periode lain jika yang ini diaktifkan
-        if ($request->is_active) {
+        if ($is_active) {
             PeriodeSeleksi::where('is_active', true)->where('id', '!=', $periode->id)->update(['is_active' => false]);
         }
 
-        $periode->update($request->all());
+        $periode->update([
+            'nama_periode' => $request->nama_periode,
+            'tanggal_mulai' => $request->tanggal_mulai,
+            'tanggal_berakhir' => $request->tanggal_berakhir,
+            'kuota_penerima' => $request->kuota_penerima,
+            'is_active' => $is_active
+        ]);
 
         return redirect()->route('periode.index')->with('success', 'Periode seleksi berhasil diperbarui.');
     }

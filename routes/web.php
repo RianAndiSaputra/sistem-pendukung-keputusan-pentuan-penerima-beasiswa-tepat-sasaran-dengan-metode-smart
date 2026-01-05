@@ -50,11 +50,14 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('hasil/export', [HasilSeleksiController::class, 'export'])->name('hasil.export');
     
     // Periode Routes
-    Route::resource('periode', PeriodeController::class);
+ Route::get('/periode', [PeriodeController::class, 'index'])->name('periode.index');
+    Route::post('/periode', [PeriodeController::class, 'store'])->name('periode.store');
+    Route::put('/periode/{periode}', [PeriodeController::class, 'update'])->name('periode.update');
+    Route::delete('/periode/{periode}', [PeriodeController::class, 'destroy'])->name('periode.destroy');
     
-    // Tambahkan route khusus untuk modal AJAX
-    Route::get('periode/{periode}/modal', [PeriodeController::class, 'getForModal'])->name('periode.modal');
-    Route::get('periode/{periode}/ajax', [PeriodeController::class, 'getAjaxData'])->name('periode.ajax');
+    // AJAX route untuk get data periode
+    Route::get('/periode/{periode}/ajax', [PeriodeController::class, 'getAjaxData'])->name('periode.ajax');
+    Route::get('/periode/{periode}/modal', [PeriodeController::class, 'getForModal'])->name('periode.modal');
     
     // Admin Management Routes
     Route::get('admin', [AdminController::class, 'index'])->name('admin.index');
